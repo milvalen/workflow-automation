@@ -1,0 +1,407 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Closed-Won",
+        "height": 194.74333845372166,
+        "width": 165.7403821922334,
+        "color": 4
+      },
+      "id": "5ee38abc-c3cb-4155-a94a-34fa912ceb84",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        712.1616449534711
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## New lead",
+        "height": 205.31592087651492,
+        "width": 176.3667741447133,
+        "color": 3
+      },
+      "id": "66f53b7a-a9cc-4023-82b4-c0ed43223ac3",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        373.6332258552867,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Follow-Up",
+        "height": 186.90498340719222,
+        "width": 150
+      },
+      "id": "01ba0a5d-0fe0-4c65-8c1f-973c17b6603b",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "action": "updated",
+        "object": "deal"
+      },
+      "id": "1825123d-5861-4fa8-8e99-bdaf55b69348",
+      "name": "Update Trigger",
+      "type": "n8n-nodes-base.pipedriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        620
+      ],
+      "webhookId": "4d3654ea-91d4-4d86-adc8-4b5838085131",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "fMbG321RSA701DIa",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "041ef3f8-ddaf-414d-9520-664ecbc581f3",
+              "leftValue": "={{ $json.current.stage_order_nr }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "6a1dc7ac-5cee-4e5c-9c2a-f1ee1e3a9df5",
+              "leftValue": "={{ $json.previous.stage_order_nr }}",
+              "rightValue": "={{ $json.current.stage_order_nr }}",
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b09c289e-c3ae-43cf-819c-271bc9dd17bc",
+      "name": "Stage === 2",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        420,
+        500
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "ef766c30-6b97-4258-b6e0-461b594c624d",
+              "leftValue": "={{ $json.current.stage_order_nr }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "a06c5a0b-38f6-48bb-93c0-0c13b330e3aa",
+              "leftValue": "={{ $json.current.stage_order_nr }}",
+              "rightValue": "={{ $json.previous.stage_order_nr }}",
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ec90ead8-0d26-48f1-8f08-1255d3d73b23",
+      "name": "Stage === 3",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        420,
+        760
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "resource": "activity",
+        "subject": "=Follow up with the{{ $if($json.current.stage_order_nr === 1, ' new', '') }} lead",
+        "type": "task",
+        "additionalFields": {
+          "deal_id": "={{ $json.current.id }}",
+          "due_date": "={{ $json.current.expected_close_date }}",
+          "note": "=Lead add time: {{ $json.current.add_time }}"
+        }
+      },
+      "id": "572f2170-4d9d-4d35-9bd7-48bd3cbb1555",
+      "name": "Create Activity",
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        620,
+        340
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "credentials": {
+        "pipedriveApi": {
+          "id": "fMbG321RSA701DIa",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.pipedrive.com/v1/persons/{{ $json.current.person_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "pipedriveApi",
+        "options": {}
+      },
+      "id": "c034a0a3-b9d1-4634-9ee8-f6079ce9d21f",
+      "name": "Get Person",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        760
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "pipedriveApi": {
+          "id": "fMbG321RSA701DIa",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "{{ $json.data.email }}",
+        "subject": "Thank you for your subscription!",
+        "emailType": "text",
+        "message": "We would love to hear your feedback. Please leave a review.",
+        "options": {}
+      },
+      "id": "cab720aa-fb65-4430-9512-ef506b46d45e",
+      "name": "Send E-mail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        760
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "VdGBmQ9dBxYief82",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C07B8KJ5BQT",
+          "mode": "list",
+          "cachedResultName": "general"
+        },
+        "text": "A lead has been closed-won! Congratulations team!",
+        "otherOptions": {}
+      },
+      "id": "06d729cf-2344-4f09-bcbb-d6202cf953f2",
+      "name": "General Message",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        940,
+        760
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "UtmfJYocSeWRmKQN",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C07AXFJQ7M5",
+          "mode": "list",
+          "cachedResultName": "appointment-scheluder"
+        },
+        "text": "=An appointment has been scheduled: https://salesautomators-sandbox22.pipedrive.com/activities/list/user/everyone?selected={{ $json.id }}&tab=activity",
+        "otherOptions": {}
+      },
+      "id": "7b0cc732-a6f4-45c1-ad24-c6b765f73419",
+      "name": "Appointment Message",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        780,
+        340
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "UtmfJYocSeWRmKQN",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "action": "added",
+        "object": "deal"
+      },
+      "id": "d1a13933-db2b-4f96-a21b-d83e251e881d",
+      "name": "Pipedrive Trigger",
+      "type": "n8n-nodes-base.pipedriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        420,
+        220
+      ],
+      "webhookId": "a741d276-5e55-4f3f-b496-05c686dc178a",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "fMbG321RSA701DIa",
+          "name": "Pipedrive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Update Trigger": {
+      "main": [
+        [
+          {
+            "node": "Stage === 3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Stage === 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage === 2": {
+      "main": [
+        [
+          {
+            "node": "Create Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage === 3": {
+      "main": [
+        [
+          {
+            "node": "Get Person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Activity": {
+      "main": [
+        [
+          {
+            "node": "Appointment Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Person": {
+      "main": [
+        [
+          {
+            "node": "Send E-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send E-mail": {
+      "main": [
+        [
+          {
+            "node": "General Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipedrive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1d007a16-3679-42e8-a492-b95d0f471cfb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1683bc35036ce5116a489ac488a8c3b34e420e4c1182b0451006da260ca3122"
+  },
+  "id": "9l6EGq1vymF4rFjO",
+  "tags": []
+}
